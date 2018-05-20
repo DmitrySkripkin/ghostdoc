@@ -8,8 +8,12 @@
     "url": "https://github.com/DmitrySkripkin/ghostdoc/issues",
     "email": "sepia13@yandex.ru"
   },
-  "contributors": ["DmitrySkripkin <sepia13@yandex.ru> ()"],
-  "dependencies": {},
+  "contributors": [
+    "DmitrySkripkin <sepia13@yandex.ru> ()"
+  ],
+  "dependencies": {
+    "reol": "^0.2.2"
+  },
   "ava": {
     "failFast": true,
     "verbose": true
@@ -34,25 +38,37 @@
     "node": ">=8.3"
   },
   "homepage": "https://github.com/DmitrySkripkin/ghostdoc",
-  "keywords": ["ghostdoc", "lass"],
+  "keywords": [
+    "ghostdoc",
+    "lass"
+  ],
   "license": "MIT",
   "lint-staged": {
     "*.{js,jsx,mjs,ts,tsx,css,less,scss,json,graphql}": [
       "prettier --write --single-quote --trailing-comma none",
       "git add"
     ],
-    "*.md": ["remark . -qfo", "git add"]
+    "*.md": [
+      "remark . -qfo",
+      "git add"
+    ]
   },
   "main": "index.js",
   "nyc": {
     "check-coverage": true,
     "lines": 100,
-    "functions": 100,
-    "branches": 100,
-    "reporter": ["lcov", "html", "text"]
+    "functions": 90,
+    "branches": 90,
+    "reporter": [
+      "lcov",
+      "html",
+      "text"
+    ]
   },
   "remarkConfig": {
-    "plugins": ["preset-github"]
+    "plugins": [
+      "preset-github"
+    ]
   },
   "repository": {
     "type": "git",
