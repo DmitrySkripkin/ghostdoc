@@ -98,6 +98,34 @@ test('applyes delete operation', t => {
   const { ghostDoc } = t.context
   ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
   ghostDoc.buildIndex()
-  ghostDoc.applyOperation({ position: '123' })
+  ghostDoc.applyOperation({ hash: '555', position: '123' })
   t.true(ghostDoc.plainText === 'bc')
+})
+
+test('can\'t apply operation', t => {
+  const { ghostDoc } = t.context
+  ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
+  ghostDoc.buildIndex()
+  ghostDoc.applyOperation({ hash: '555', position: 'nope' })
+  t.true(ghostDoc.plainText === 'abc')
+  t.true(ghostDoc.stashed['nope'].hash === '555')
+})
+
+test('applyes multiple insert operations', t => {
+  const { ghostDoc } = t.context
+  ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
+  ghostDoc.buildIndex()
+  ghostDoc.applyOperation({ hash: '444', position: '123', insert: 'g' })
+  ghostDoc.applyOperation({ hash: '142', position: '222', insert: 'e' })
+  ghostDoc.applyOperation({ hash: '142', position: '444', insert: 'x' })
+  t.true(ghostDoc.plainText === 'agxbce')
+})
+
+test('can\'t apply operation but then can', t => {
+  const { ghostDoc } = t.context
+  ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
+  ghostDoc.buildIndex()
+  ghostDoc.applyOperation({ hash: '555', position: 'nope', insert: 'n' })
+  ghostDoc.applyOperation({ hash: 'nope', position: '123', insert: 'x' })
+  t.true(ghostDoc.plainText === 'axnbc')
 })

@@ -17,6 +17,14 @@ class GhostDoc {
     }
   }
 
+  get stashed () {
+    return this._stashed || {}
+  }
+
+  set stashed (value) {
+    this._stashed = value
+  }
+
   get amp () {
     return this._amp || 1
   }
@@ -32,18 +40,30 @@ class GhostDoc {
   get plainText () {
     if (this.content.length === 0) return ''
     return this.content.reduce((acc, curr) => {
-      if (curr.deleted) return acc
-      return acc + curr.insert
+      if (curr.insert) {
+        return acc + curr.insert
+      }
+      return acc.substring(0, acc.length - 1)
     }, '')
   }
 
   applyOperation (operation) {
     let position = this.findPosition(operation.position)
+    if (!position && position !== 0) {
+      const stashed = this.stashed
+      stashed[operation.position] = operation
+      this.stashed = stashed
+      return
+    }
     this.amp = this.amp + 1
-    if (operation.insert) {
-      this.content.splice(position, 0, operation)
-    } else {
-      this.content[position].deleted = true
+    this.content.splice(position + 1, 0, operation)
+    this.index[operation.hash] = position
+    if (this.stashed[operation.hash]) {
+      const stashed = this.stashed
+      const operationTemp = stashed[operation.hash]
+      delete stashed[operation.hash]
+      this.stashed = stashed
+      this.applyOperation(operationTemp)
     }
   }
 
@@ -65,10 +85,13 @@ class GhostDoc {
   }
 
   findPosition (hash) {
-    let i = this.amp
-    for (let symbol of this._getPartForPositionSearch()) {
+    let i = this.index[hash]
+    // let i = this.amp
+    const part = this._getPartForPositionSearch(hash)
+    for (let symbol of part) {
       if (symbol.hash === hash) {
-        return i - 1
+        if (part[i] && !part[i].insert) return i
+        return i
       }
       i++
     }
