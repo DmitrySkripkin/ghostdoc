@@ -17,6 +17,10 @@ class GhostDoc {
     }
   }
 
+  generateHash (id) {
+    return `${Date.now()}:${id}:${Math.random().toString().substr(2)}`
+  }
+
   get stashed () {
     return this._stashed || {}
   }
@@ -55,6 +59,13 @@ class GhostDoc {
       this.stashed = stashed
       return
     }
+
+    while (this.content[position + 1] && this.content[position + 1].position &&
+      this.content[position + 1].position === operation.position &&
+      this.content[position + 1].hash < operation.hash) {
+      position++
+    }
+
     this.amp = this.amp + 1
     this.content.splice(position + 1, 0, operation)
     this.index[operation.hash] = position
@@ -90,7 +101,6 @@ class GhostDoc {
     const part = this._getPartForPositionSearch(hash)
     for (let symbol of part) {
       if (symbol.hash === hash) {
-        if (part[i] && !part[i].insert) return i
         return i
       }
       i++

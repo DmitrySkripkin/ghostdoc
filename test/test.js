@@ -1,7 +1,8 @@
 const test = require('ava')
-
 const GhostDoc = require('../')
 const { beforeEach, afterEach } = require('./helpers')
+
+const id = 'DmitrySkripkin'
 
 test.beforeEach(beforeEach)
 test.afterEach(afterEach)
@@ -13,6 +14,12 @@ test('returns itself', t => {
 test('sets a config object', t => {
   const ghostDoc = new GhostDoc(false)
   t.true(ghostDoc instanceof GhostDoc)
+})
+
+test('generates hash', t => {
+  const ghostDoc = new GhostDoc(false)
+  const hash = ghostDoc.generateHash(id)
+  t.true(typeof hash === 'string')
 })
 
 test('returns content', t => {
@@ -74,50 +81,50 @@ test('set amp', t => {
 
 test('finds a position', t => {
   const { ghostDoc } = t.context
-  ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
+  ghostDoc.content = [{ hash: '0', insert: 'a' }, { hash: '1', insert: 'b' }, { hash: '2', insert: 'c' }]
   ghostDoc.buildIndex()
-  t.true(ghostDoc.findPosition('222') === 2)
+  t.true(ghostDoc.findPosition('2') === 2)
 })
 
 test('can\'t find a position', t => {
   const { ghostDoc } = t.context
-  ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
+  ghostDoc.content = [{ hash: '1', insert: 'a' }, { hash: '2', insert: 'b' }, { hash: '3', insert: 'c' }]
   ghostDoc.buildIndex()
   t.true(ghostDoc.findPosition('nope') === null)
 })
 
 test('applyes insert operation', t => {
   const { ghostDoc } = t.context
-  ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
+  ghostDoc.content = [{ hash: '1', insert: 'a' }, { hash: '2', insert: 'b' }, { hash: '3', insert: 'c' }]
   ghostDoc.buildIndex()
-  ghostDoc.applyOperation({ hash: '444', position: '123', insert: 'a' })
+  ghostDoc.applyOperation({ hash: '4', position: '1', insert: 'a' })
   t.true(ghostDoc.plainText === 'aabc')
 })
 
 test('applyes delete operation', t => {
   const { ghostDoc } = t.context
-  ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
+  ghostDoc.content = [{ hash: '1', insert: 'a' }, { hash: '2', insert: 'b' }, { hash: '3', insert: 'c' }]
   ghostDoc.buildIndex()
-  ghostDoc.applyOperation({ hash: '555', position: '123' })
+  ghostDoc.applyOperation({ hash: '555', position: '1' })
   t.true(ghostDoc.plainText === 'bc')
 })
 
 test('can\'t apply operation', t => {
   const { ghostDoc } = t.context
-  ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
+  ghostDoc.content = [{ hash: '1', insert: 'a' }, { hash: '2', insert: 'b' }, { hash: '3', insert: 'c' }]
   ghostDoc.buildIndex()
-  ghostDoc.applyOperation({ hash: '555', position: 'nope' })
+  ghostDoc.applyOperation({ hash: '4', position: 'nope' })
   t.true(ghostDoc.plainText === 'abc')
-  t.true(ghostDoc.stashed['nope'].hash === '555')
+  t.true(ghostDoc.stashed['nope'].hash === '4')
 })
 
 test('applyes multiple insert operations', t => {
   const { ghostDoc } = t.context
-  ghostDoc.content = [{ hash: '123', insert: 'a' }, { hash: '321', insert: 'b' }, { hash: '222', insert: 'c' }]
+  ghostDoc.content = [{ hash: '1', insert: 'a' }, { hash: '2', insert: 'b' }, { hash: '3', insert: 'c' }]
   ghostDoc.buildIndex()
-  ghostDoc.applyOperation({ hash: '444', position: '123', insert: 'g' })
-  ghostDoc.applyOperation({ hash: '142', position: '222', insert: 'e' })
-  ghostDoc.applyOperation({ hash: '142', position: '444', insert: 'x' })
+  ghostDoc.applyOperation({ hash: '4', position: '1', insert: 'g' })
+  ghostDoc.applyOperation({ hash: '5', position: '3', insert: 'e' })
+  ghostDoc.applyOperation({ hash: '6', position: '4', insert: 'x' })
   t.true(ghostDoc.plainText === 'agxbce')
 })
 
@@ -128,4 +135,20 @@ test('can\'t apply operation but then can', t => {
   ghostDoc.applyOperation({ hash: '555', position: 'nope', insert: 'n' })
   ghostDoc.applyOperation({ hash: 'nope', position: '123', insert: 'x' })
   t.true(ghostDoc.plainText === 'axnbc')
+})
+
+test('wrong order', t => {
+  const { ghostDoc } = t.context
+  ghostDoc.content = [{ hash: '0:111:1', insert: 'a' }, { hash: '5:333:6', insert: 'b', position: '0:111:1' }]
+  ghostDoc.buildIndex()
+  ghostDoc.applyOperation({ hash: '1:222:3', position: '0:111:1', insert: 'x' })
+  t.true(ghostDoc.plainText === 'axb')
+})
+
+test('wrong order 2', t => {
+  const { ghostDoc } = t.context
+  ghostDoc.content = [{ hash: '0:111:1', insert: 'a' }, { hash: '5:333:6', insert: 'b', position: '0:111:1' }]
+  ghostDoc.buildIndex()
+  ghostDoc.applyOperation({ hash: '7:222:3', position: '0:111:1', insert: 'x' })
+  t.true(ghostDoc.plainText === 'abx')
 })
