@@ -152,3 +152,23 @@ test('wrong order 2', t => {
   ghostDoc.applyOperation({ hash: '7:222:3', position: '0:111:1', insert: 'x' })
   t.true(ghostDoc.plainText === 'abx')
 })
+
+test(`don't break my word`, t => {
+  const { ghostDoc } = t.context
+  ghostDoc.content = [{ hash: '0:111:1', insert: 'h' }, { hash: '5:333:6', insert: 'i', position: '0:111:1' }]
+  ghostDoc.buildIndex()
+  ghostDoc.applyOperation({ hash: '7:222:3', position: '5:333:6', insert: ' ' })
+  ghostDoc.applyOperation({ hash: '7:262:3', position: '5:333:6', insert: ' ' })
+
+  ghostDoc.applyOperation({ hash: '7:222:4', position: '7:222:3', insert: 'f' })
+  ghostDoc.applyOperation({ hash: '5:262:3', position: '7:262:3', insert: 'b' })
+
+  ghostDoc.applyOperation({ hash: '7:241:4', position: '7:222:4', insert: 'o' })
+  ghostDoc.applyOperation({ hash: '2:262:3', position: '5:262:3', insert: 'a' })
+
+  ghostDoc.applyOperation({ hash: '9:241:4', position: '7:241:4', insert: 'o' })
+  ghostDoc.applyOperation({ hash: '9:262:3', position: '2:262:3', insert: 'r' })
+  // t.log(ghostDoc.plainText)
+
+  t.true(ghostDoc.plainText === 'hi foo bar')
+})
