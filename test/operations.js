@@ -1,6 +1,6 @@
 const test = require('ava')
 const GhostDoc = require('../')
-const { beforeEach, afterEach } = require('./helpers')
+const { beforeEach, afterEach } = require('./helpers/ghostDoc')
 
 const id = 'DmitrySkripkin'
 
