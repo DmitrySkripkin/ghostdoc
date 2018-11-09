@@ -93,7 +93,15 @@ class DLL {
       afterNodeToDelete.previous = beforeNodeToDelete
     }
     return true
-    // return message.success
+  }
+
+  removeByHash (hash) {
+    const node = this.hashMap.get(hash)
+    if (!node) return false
+    this.hashMap.delete(hash)
+    node.previous.next = node.next
+    node.next.previous = node.previous
+    return true
   }
 }
 

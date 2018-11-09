@@ -107,3 +107,21 @@ test('get node by hash', t => {
   dll.add({ insert: 'c', hash: 3 })
   t.true(dll.getNodeByHash(2).data.insert === 'b')
 })
+
+test('remove node by hash', t => {
+  const dll = new DLL()
+  dll.add({ insert: 'a', hash: 1 })
+  dll.add({ insert: 'b', hash: 2 })
+  dll.add({ insert: 'c', hash: 3 })
+  dll.removeByHash(2)
+  t.true(dll.length === 2)
+})
+
+test('remove non-existent node by hash', t => {
+  const dll = new DLL()
+  dll.add({ insert: 'a', hash: 1 })
+  dll.add({ insert: 'b', hash: 2 })
+  dll.add({ insert: 'c', hash: 3 })
+  dll.removeByHash(5)
+  t.true(dll.length === 3)
+})
