@@ -2,6 +2,7 @@ const autoBind = require('auto-bind')
 
 class LI {
   constructor (data) {
+    this.hash = data.hash
     this.data = data
     this.next = null
     this.previous = null
@@ -11,10 +12,14 @@ class LI {
 
 class DLL {
   constructor () {
+    this.hashMap = new Map()
     this.head = null
     this.tail = null
-    this.length = 0
     autoBind(this)
+  }
+
+  get length () {
+    return this.hashMap.size
   }
 
   add (value) {
@@ -27,7 +32,7 @@ class DLL {
       this.head = node
       this.tail = node
     }
-    this.length++
+    this.hashMap.set(node.hash, node)
     return node
   }
 
@@ -47,6 +52,10 @@ class DLL {
     return currentNode
   }
 
+  getNodeByHash (hash) {
+    return this.hashMap.get(hash)
+  }
+
   remove (position) {
     let currentNode = this.head
     const length = this.length
@@ -58,16 +67,18 @@ class DLL {
       return false
       // throw new Error(message.failure)
     }
-
     if (position === 1) {
       if (this.length === 1) {
         this.tail = null
         this.head = null
+        this.hashMap = new Map()
       } else {
+        this.hashMap.delete(this.head.hash)
         this.head = currentNode.next
         this.head.previous = null
       }
     } else if (position === this.length) {
+      this.hashMap.delete(this.tail.hash)
       this.tail = this.tail.previous
       this.tail.next = null
     } else {
@@ -75,12 +86,12 @@ class DLL {
         currentNode = currentNode.next
         count++
       }
+      this.hashMap.delete(currentNode.hash)
       beforeNodeToDelete = currentNode.previous
       let afterNodeToDelete = currentNode.next
       beforeNodeToDelete.next = afterNodeToDelete
       afterNodeToDelete.previous = beforeNodeToDelete
     }
-    this.length--
     return true
     // return message.success
   }
